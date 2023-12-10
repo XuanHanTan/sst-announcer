@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sst_announcer/screens/root.dart';
+import 'package:sst_announcer/screens/app_host.dart';
 
 void main() {
   runApp(const MyApp());
