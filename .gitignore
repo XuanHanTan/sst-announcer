@@ -41,3 +41,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/lib/logic/database/post_storage/database.g.dart
+/lib/logic/providers/db_provider.g.dart
+/lib/logic/database/post_storage/post_datatype.freezed.dart
+/lib/logic/database/post_storage/post_datatype.g.dart
