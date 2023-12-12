@@ -139,7 +139,8 @@ class PostsPage extends HookConsumerWidget {
                   return Container();
                 }
 
-                if (index == allPosts.value!.length + 3 - 1) {
+                if (index == allPosts.value!.length) {
+                  // The index starts from zero rule helps out here
                   return AnnouncementCard(
                     post: target,
                     built: () {
