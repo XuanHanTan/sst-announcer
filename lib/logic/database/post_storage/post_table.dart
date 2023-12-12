@@ -14,6 +14,5 @@ class Posts extends Table {
   TextColumn get customCategories => text()();
 
   @override
-  // TODO: implement primaryKey
   Set<Column<Object>>? get primaryKey => {uid};
 }
