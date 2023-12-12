@@ -10,7 +10,10 @@ extension Converters on AtomItem {
         content: content!,
         creators: authors.toCustomFormat(),
         postLink: HtmlUnescape().convert(links[2].href!),
-        categories: categories.map((e) => e.term!).toList(),
+        categories: categories
+            .where((element) => element.term != null && element.term != "")
+            .map((e) => e.term!)
+            .toList(),
         publishDate: DateTime.parse(published!),
         modifiedDate: DateTime.parse(updated!),
         customCategories: []);

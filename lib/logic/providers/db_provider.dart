@@ -18,7 +18,7 @@ class DbInstance extends _$DbInstance {
     return db.getAllPosts();
   }
 
-  Future filteredPosts(String? searchTerm, List<String>? categories) async {
+  Future filteredPosts(String? searchTerm, Set<String>? categories) async {
     var posts = await db.getAllPosts();
 
     if ((searchTerm == null || searchTerm == "") && categories == null) {
@@ -32,11 +32,10 @@ class DbInstance extends _$DbInstance {
           .toList();
     }
 
-    if (categories != null) {
+    if (categories != null && categories.isNotEmpty) {
       posts = posts.where((element) {
-        // If the post contains at lease one category which is in the categories parameter accept it
-        if (element.customCategories
-            .any((element) => categories.contains(element))) {
+        // If the post contains at least one category which is in the categories parameter accept it
+        if (element.categories.any((element) => categories.contains(element))) {
           return true;
         }
         return false;

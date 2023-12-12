@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sst_announcer/logic/database/post_storage/post_datatype.dart';
 import 'package:sst_announcer/logic/providers/db_provider.dart';
+import 'package:sst_announcer/screens/posts/filter_select_bottom_sheet.dart';
 import 'package:sst_announcer/widgets/announcement_card.dart';
 
 class PostsPage extends HookConsumerWidget {
@@ -18,6 +19,8 @@ class PostsPage extends HookConsumerWidget {
     var searchFocusNode = useFocusNode(canRequestFocus: true);
 
     var allPosts = ref.watch(dbInstanceProvider);
+
+    var categoryFilters = useState<Set<String>>({});
 
     useEffect(() {
       scrollController.addListener(() {
@@ -44,16 +47,26 @@ class PostsPage extends HookConsumerWidget {
             scrolledUnderElevation: .5,
             actions: [
               ActionChip(
-                  label: const Row(
+                  backgroundColor: (categoryFilters.value.isEmpty)
+                      ? null
+                      : Theme.of(context).colorScheme.primaryContainer,
+                  label: Row(
                     children: [
-                      Text("Filter"),
-                      SizedBox(
+                      (categoryFilters.value.isEmpty)
+                          ? const Text("Filter")
+                          : Text("${categoryFilters.value.length}"),
+                      const SizedBox(
                         width: 4,
                       ),
-                      Icon(Icons.filter_list)
+                      const Icon(Icons.filter_list)
                     ],
                   ),
-                  onPressed: () {},
+                  onPressed: () async {
+                    categoryFilters.value = await getCategoryFilters(
+                        context, categoryFilters.value);
+                    ref.read(dbInstanceProvider.notifier).filteredPosts(
+                        searchController.text, categoryFilters.value);
+                  },
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50))),
             ],
@@ -90,7 +103,7 @@ class PostsPage extends HookConsumerWidget {
                             onChanged: (term) async {
                               ref
                                   .read(dbInstanceProvider.notifier)
-                                  .filteredPosts(term, null);
+                                  .filteredPosts(term, categoryFilters.value);
                             },
                             focusNode: searchFocusNode,
                             onTap: () {
@@ -120,7 +133,9 @@ class PostsPage extends HookConsumerWidget {
                   target = null;
                 }
 
-                if (searchController.text != "" && target == null) {
+                if (target == null &&
+                    (categoryFilters.value.isNotEmpty ||
+                        searchController.text != "")) {
                   return Container();
                 }
 

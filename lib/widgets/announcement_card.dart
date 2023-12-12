@@ -70,6 +70,34 @@ class AnnouncementCard extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              Wrap(
+                children: [
+                  ...(post?.categories
+                          .map((e) => (e != "")
+                              ? Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Chip(
+                                    label: Text(e),
+                                    padding: const EdgeInsets.all(4),
+                                  ),
+                                )
+                              : Container())
+                          .toList() ??
+                      []),
+                  ...(post?.customCategories
+                          .map((e) => (e != "")
+                              ? Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Chip(
+                                    label: Text(e),
+                                    padding: const EdgeInsets.all(4),
+                                  ),
+                                )
+                              : Container())
+                          .toList() ??
+                      [])
+                ],
               )
             ],
           ),
