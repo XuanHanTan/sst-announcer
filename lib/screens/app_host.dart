@@ -18,17 +18,17 @@ class AppHost extends HookWidget {
         _ => throw ArgumentError(
             "There is a number which does not fit in the destinations."),
       },
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: chosenIndex.value,
-        onDestinationSelected: (index) {
-          chosenIndex.value = index;
-        },
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.local_post_office), label: "Posts"),
-          NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
-        ],
-      ),
+      // bottomNavigationBar: NavigationBar(
+      //   selectedIndex: chosenIndex.value,
+      //   onDestinationSelected: (index) {
+      //     chosenIndex.value = index;
+      //   },
+      //   destinations: const [
+      //     NavigationDestination(
+      //         icon: Icon(Icons.local_post_office), label: "Posts"),
+      //     NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
+      //   ],
+      // ),
     );
   }
 }

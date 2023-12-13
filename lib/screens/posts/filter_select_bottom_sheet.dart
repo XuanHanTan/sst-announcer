@@ -52,31 +52,27 @@ Future<Set<String>> getCategoryFilters(
             ),
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Column(
                   children: [
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          children: [
-                            ...(categories.map((e) => Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: FilterChip(
-                                      selected: currentCategories.contains(e),
-                                      label: Text(e),
-                                      onSelected: (selected) {
-                                        setState(() {
-                                          if (selected) {
-                                            currentCategories.add(e);
-                                          } else {
-                                            currentCategories.remove(e);
-                                          }
-                                        });
-                                      }),
-                                )))
-                          ],
-                        ),
-                      ),
+                      child: ListView(
+                          shrinkWrap: true,
+                          children: categories
+                              .map((e) => CheckboxListTile(
+                                    value: currentCategories.contains(e),
+                                    onChanged: (selected) {
+                                      setState(() {
+                                        if (selected!) {
+                                          currentCategories.add(e);
+                                        } else {
+                                          currentCategories.remove(e);
+                                        }
+                                      });
+                                    },
+                                    title: Text(e),
+                                  ))
+                              .toList()),
                     )
                   ],
                 ),
