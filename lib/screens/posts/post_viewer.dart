@@ -85,7 +85,7 @@ class PostViewerPage extends HookWidget {
                   "${post.publishDate.day}/${post.publishDate.month}/${post.publishDate.year} at ${post.publishDate.hour}:${post.publishDate.minute}"),
             ],
           ),
-          Divider(),
+          const Divider(),
           Html(data: post.content.replaceAll("<br />", ""), style: {
             "span": globalHTMLStyle(context),
             "div": globalHTMLStyle(context),

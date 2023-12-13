@@ -1,7 +1,6 @@
 import 'package:dart_rss/domain/atom_feed.dart';
 import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sst_announcer/logic/database/post_storage/database.dart';
 import 'package:sst_announcer/logic/database/post_storage/post_datatype.dart';
@@ -49,8 +48,6 @@ class DbInstance extends _$DbInstance {
     var url = Uri.parse(
         "https://www.blogger.com/feeds/2263345748458699524/posts/default?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${numberToFetch ?? 10}");
     var response = await http.get(url);
-
-    print(await getApplicationDocumentsDirectory());
 
     var atomFeed = AtomFeed.parse(response.body);
 

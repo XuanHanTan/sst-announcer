@@ -18,8 +18,6 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   Future<List<Post>> getAllPosts() async {
-    print(await getApplicationDocumentsDirectory());
-
     return await (select(posts)
           ..orderBy([
             (tbl) => OrderingTerm(
