@@ -1,11 +1,11 @@
 import 'package:dart_rss/dart_rss.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:sst_announcer/blogspotUrl.dart';
+import 'package:sst_announcer/blogspot_url.dart';
 
 Future<Set<String>> getCategoryFilters(
     BuildContext context, Set<String> currentFilters) async {
-  var url = Uri.parse("${BaseUrl.BlogUrl}?start-index=1&max-results=1");
+  var url = Uri.parse("${BaseUrl.blogUrl}?start-index=1&max-results=1");
   var response = await http.get(url);
 
   var atomFeed = AtomFeed.parse(response.body);
