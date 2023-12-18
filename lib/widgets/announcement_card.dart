@@ -17,7 +17,7 @@ class AnnouncementCard extends StatelessWidget {
     built?.call();
 
     return Padding(
-      padding: const EdgeInsets.only(right: 5, left: 5, bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: onTap,
         child: Card(

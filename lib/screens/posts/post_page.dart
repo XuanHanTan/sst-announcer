@@ -101,6 +101,7 @@ class PostsPage extends HookConsumerWidget {
       body: //
           (allPosts.value != null)
               ? ListView.builder(
+                  padding: const EdgeInsets.all(8),
                   itemCount: allPosts.value!.length + 4,
                   itemBuilder: (context, index) {
                     Post? target;
