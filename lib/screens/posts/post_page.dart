@@ -147,7 +147,7 @@ class PostsPage extends HookConsumerWidget {
                     );
                   },
                 )
-              : Container(),
+              : const Center(child: CircularProgressIndicator()),
     ));
   }
 }
