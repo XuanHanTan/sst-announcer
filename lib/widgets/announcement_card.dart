@@ -41,7 +41,7 @@ class AnnouncementCard extends StatelessWidget {
                           "${post?.creators.first.name ?? ""} ${(post?.creators.length != 1) ? "and ${(post?.creators.length ?? 1) - 1} other" : ""}"),
                       const Spacer(),
                       Text((post?.publishDate != null)
-                          ? "${post!.publishDate.day}/${post!.publishDate.month}/${post!.publishDate.year} at ${post!.publishDate.hour}:${post!.publishDate.minute}"
+                          ? "${post!.publishDate.day}/${post!.publishDate.month}/${post!.publishDate.year} at ${post!.publishDate.hour.toString().padLeft(2, "0")}:${post!.publishDate.minute.toString().padLeft(2, "0")}"
                           : "LOADING"),
                     ],
                   ),
