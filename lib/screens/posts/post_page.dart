@@ -20,125 +20,133 @@ class PostsPage extends HookConsumerWidget {
     var categoryFilters = useState<Set<String>>({});
 
     return Scaffold(
-        body: CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          title: Text(searchController.text == "" ? "Announcements" : "Search"),
-          floating: true,
-          snap: true,
-          pinned: true,
-          stretch: true,
-          scrolledUnderElevation: .5,
-          // actions: [IconButton(onPressed: () {}, icon: Icon(Icons.settings))],
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(75),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SearchBar(
-                        leading: const Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(Icons.search),
+        body: NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverAppBar(
+            title:
+                Text(searchController.text == "" ? "Announcements" : "Search"),
+            floating: true,
+            snap: true,
+            pinned: true,
+            stretch: true,
+            scrolledUnderElevation: .5,
+            // actions: [IconButton(onPressed: () {}, icon: Icon(Icons.settings))],
+            bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(75),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SearchBar(
+                          leading: const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.search),
+                          ),
+                          shadowColor: const MaterialStatePropertyAll(
+                              Colors.transparent),
+                          onChanged: (term) async {
+                            ref
+                                .read(dbInstanceProvider.notifier)
+                                .filteredPosts(term, categoryFilters.value);
+                          },
+                          hintText: "Search for a Post",
+                          controller: searchController,
                         ),
-                        shadowColor:
-                            const MaterialStatePropertyAll(Colors.transparent),
-                        onChanged: (term) async {
-                          ref
-                              .read(dbInstanceProvider.notifier)
-                              .filteredPosts(term, categoryFilters.value);
-                        },
-                        hintText: "Search for a Post",
-                        controller: searchController,
                       ),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Container(
-                      width: 56 * 1.5,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: Theme.of(context).colorScheme.secondaryContainer,
+                      const SizedBox(
+                        width: 8,
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(50),
-                        onTap: () async {
-                          categoryFilters.value = await getCategoryFilters(
-                              context, categoryFilters.value);
-                          ref.read(dbInstanceProvider.notifier).filteredPosts(
-                              searchController.text, categoryFilters.value);
-                        },
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              if (categoryFilters.value.isNotEmpty)
-                                Text("${categoryFilters.value.length}"),
-                              if (categoryFilters.value.isNotEmpty)
-                                const SizedBox(
-                                  width: 4,
-                                ),
-                              const Icon(Icons.filter_list),
-                            ],
+                      Container(
+                        width: 56 * 1.5,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () async {
+                            categoryFilters.value = await getCategoryFilters(
+                                context, categoryFilters.value);
+                            ref.read(dbInstanceProvider.notifier).filteredPosts(
+                                searchController.text, categoryFilters.value);
+                          },
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (categoryFilters.value.isNotEmpty)
+                                  Text("${categoryFilters.value.length}"),
+                                if (categoryFilters.value.isNotEmpty)
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                const Icon(Icons.filter_list),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-              )),
-          shadowColor: Colors.transparent,
-        ),
-        if (allPosts.value != null)
-          SliverList.builder(
-            itemCount: allPosts.value!.length + 4,
-            itemBuilder: (context, index) {
-              Post? target;
+                      )
+                    ],
+                  ),
+                )),
+            shadowColor: Colors.transparent,
+          ),
+        ];
+      },
+      body: //
+          (allPosts.value != null)
+              ? ListView.builder(
+                  itemCount: allPosts.value!.length + 4,
+                  itemBuilder: (context, index) {
+                    Post? target;
 
-              try {
-                target = allPosts.value![index];
-              } catch (e) {
-                target = null;
-              }
+                    try {
+                      target = allPosts.value![index];
+                    } catch (e) {
+                      target = null;
+                    }
 
-              if (target == null &&
-                  (categoryFilters.value.isNotEmpty ||
-                      searchController.text != "")) {
-                return Container();
-              }
+                    if (target == null &&
+                        (categoryFilters.value.isNotEmpty ||
+                            searchController.text != "")) {
+                      return Container();
+                    }
 
-              if (index == allPosts.value!.length) {
-                // The index starts from zero rule helps out here
-                return AnnouncementCard(
-                  post: target,
-                  built: () {
-                    ref.read(dbInstanceProvider.notifier).fetchMorePosts();
+                    if (index == allPosts.value!.length) {
+                      // The index starts from zero rule helps out here
+                      return AnnouncementCard(
+                        post: target,
+                        built: () {
+                          ref
+                              .read(dbInstanceProvider.notifier)
+                              .fetchMorePosts();
+                        },
+                      );
+                    } else if (index == allPosts.value!.length + 1 ||
+                        index == allPosts.value!.length + 2) {
+                      return AnnouncementCard(post: target);
+                    } else if (index == allPosts.value!.length + 3) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).viewPadding.bottom,
+                      );
+                    }
+
+                    return AnnouncementCard(
+                      post: target,
+                      onTap: () {
+                        Navigator.of(context).push(CupertinoPageRoute(
+                          builder: (context) => PostViewerPage(post: target!),
+                        ));
+                      },
+                    );
                   },
-                );
-              } else if (index == allPosts.value!.length + 1 ||
-                  index == allPosts.value!.length + 2) {
-                return AnnouncementCard(post: target);
-              } else if (index == allPosts.value!.length + 3) {
-                return SizedBox(
-                  height: MediaQuery.of(context).viewPadding.bottom,
-                );
-              }
-
-              return AnnouncementCard(
-                post: target,
-                onTap: () {
-                  Navigator.of(context).push(CupertinoPageRoute(
-                    builder: (context) => PostViewerPage(post: target!),
-                  ));
-                },
-              );
-            },
-          )
-      ],
+                )
+              : Container(),
     ));
   }
 }
