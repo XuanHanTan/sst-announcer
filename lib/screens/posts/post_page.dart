@@ -13,8 +13,6 @@ class PostsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var scrollController = useScrollController();
-
     var searchController = useTextEditingController();
 
     var allPosts = ref.watch(dbInstanceProvider);
@@ -23,7 +21,6 @@ class PostsPage extends HookConsumerWidget {
 
     return Scaffold(
         body: CustomScrollView(
-      controller: scrollController,
       slivers: [
         SliverAppBar(
           title: Text(searchController.text == "" ? "Announcements" : "Search"),
@@ -32,6 +29,7 @@ class PostsPage extends HookConsumerWidget {
           pinned: true,
           stretch: true,
           scrolledUnderElevation: .5,
+          // actions: [IconButton(onPressed: () {}, icon: Icon(Icons.settings))],
           bottom: PreferredSize(
               preferredSize: const Size.fromHeight(75),
               child: Padding(
@@ -44,6 +42,8 @@ class PostsPage extends HookConsumerWidget {
                           padding: EdgeInsets.only(left: 8.0),
                           child: Icon(Icons.search),
                         ),
+                        shadowColor:
+                            const MaterialStatePropertyAll(Colors.transparent),
                         onChanged: (term) async {
                           ref
                               .read(dbInstanceProvider.notifier)

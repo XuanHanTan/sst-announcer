@@ -21,6 +21,7 @@ class AnnouncementCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Card(
+          shadowColor: Colors.transparent,
           child: Skeletonizer(
             enabled: post == null,
             child: Padding(
