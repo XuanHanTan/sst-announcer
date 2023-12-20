@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sst_announcer/logic/database/post_storage/post_datatype.dart';
 import 'package:sst_announcer/logic/utils/feed.dart';
 
 class AnnouncementCard extends StatelessWidget {
-  AnnouncementCard({super.key, required this.post, this.built, this.onTap})
+  const AnnouncementCard(
+      {super.key, required this.post, this.built, this.onTap})
       : assert((post != null && built == null) || post == null);
 
   final Post? post;
@@ -69,6 +69,10 @@ class AnnouncementCard extends StatelessWidget {
                       const Spacer(
                         flex: 2,
                       ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.push_pin),
+                      ),
                     ],
                   ),
                   const SizedBox(
@@ -108,7 +112,7 @@ class AnnouncementCard extends StatelessWidget {
                                     )
                                   : Container())
                               .toList() ??
-                          [])
+                          []),
                     ],
                   )
                 ],

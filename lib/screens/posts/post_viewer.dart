@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sst_announcer/logic/database/post_storage/post_datatype.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -89,19 +90,23 @@ class PostViewerPage extends HookWidget {
               ],
             ),
             const Divider(),
-            Center(
-              child: Html(
-                onLinkTap: (url, attributes, element) {
-                  launchUrl(Uri.parse(url!));
-                },
-                data: post.content,
-                style: {
-                  "span": globalHTMLStyle(context),
-                  "div": globalHTMLStyle(context),
-                  "img": globalHTMLStyle(context)
-                },
+            /*Html(
+              onLinkTap: (url, attributes, element) {
+                launchUrl(Uri.parse(url!));
+              },
+              data: post.content,
+              style: {
+                "span": globalHTMLStyle(context),
+                "div": globalHTMLStyle(context),
+                "img": globalHTMLStyle(context)
+              },
+            ),*/
+            HtmlWidget(
+              post.content,
+              onTapUrl: (url) => launchUrl(
+                Uri.parse(url),
               ),
-            )
+            ),
           ],
         ),
       ),
