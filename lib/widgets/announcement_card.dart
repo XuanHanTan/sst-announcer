@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sst_announcer/logic/database/post_storage/post_datatype.dart';
 import 'package:sst_announcer/logic/utils/feed.dart';
 
 class AnnouncementCard extends StatelessWidget {
-  const AnnouncementCard(
-      {super.key, required this.post, this.built, this.onTap})
+  AnnouncementCard({super.key, required this.post, this.built, this.onTap})
       : assert((post != null && built == null) || post == null);
 
   final Post? post;
