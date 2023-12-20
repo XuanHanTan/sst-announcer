@@ -13,8 +13,6 @@ class PostsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var scrollController = useScrollController();
-
     var searchController = useTextEditingController();
 
     var allPosts = ref.watch(dbInstanceProvider);
@@ -22,82 +20,91 @@ class PostsPage extends HookConsumerWidget {
     var categoryFilters = useState<Set<String>>({});
 
     return Scaffold(
-        body: CustomScrollView(
-      controller: scrollController,
-      slivers: [
-        SliverAppBar(
-          title: Text(searchController.text == "" ? "Announcements" : "Search"),
-          floating: true,
-          snap: true,
-          pinned: true,
-          stretch: true,
-          scrolledUnderElevation: .5,
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(75),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SearchBar(
-                        leading: const Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(Icons.search),
+        body: NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverAppBar(
+            title:
+                Text(searchController.text == "" ? "Announcements" : "Search"),
+            floating: true,
+            snap: true,
+            pinned: true,
+            stretch: true,
+            scrolledUnderElevation: .5,
+            // actions: [IconButton(onPressed: () {}, icon: Icon(Icons.settings))],
+            bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(75),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SearchBar(
+                          leading: const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.search),
+                          ),
+                          shadowColor: const MaterialStatePropertyAll(
+                              Colors.transparent),
+                          onChanged: (term) async {
+                            ref
+                                .read(dbInstanceProvider.notifier)
+                                .filteredPosts(term, categoryFilters.value);
+                          },
+                          hintText: "Search for a Post",
+                          controller: searchController,
                         ),
-                        onChanged: (term) async {
-                          ref
-                              .read(dbInstanceProvider.notifier)
-                              .filteredPosts(term, categoryFilters.value);
-                        },
-                        hintText: "Search for a Post",
-                        controller: searchController,
                       ),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Container(
-                      width: 56 * 1.5,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: Theme.of(context).colorScheme.secondaryContainer,
+                      const SizedBox(
+                        width: 8,
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(50),
-                        onTap: () async {
-                          categoryFilters.value = await getCategoryFilters(
-                              context, categoryFilters.value);
-                          ref.read(dbInstanceProvider.notifier).filteredPosts(
-                              searchController.text, categoryFilters.value);
-                        },
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              if (categoryFilters.value.isNotEmpty)
-                                Text("${categoryFilters.value.length}"),
-                              if (categoryFilters.value.isNotEmpty)
-                                const SizedBox(
-                                  width: 4,
-                                ),
-                              const Icon(Icons.filter_list),
-                            ],
+                      Container(
+                        width: 56 * 1.5,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () async {
+                            categoryFilters.value = await getCategoryFilters(
+                                context, categoryFilters.value);
+                            ref.read(dbInstanceProvider.notifier).filteredPosts(
+                                searchController.text, categoryFilters.value);
+                          },
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (categoryFilters.value.isNotEmpty)
+                                  Text("${categoryFilters.value.length}"),
+                                if (categoryFilters.value.isNotEmpty)
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                const Icon(Icons.filter_list),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-              )),
-          shadowColor: Colors.transparent,
-        ),
-        if (allPosts.value != null)
-          SliverList.builder(
-            itemCount: allPosts.value!.length + 4,
-            itemBuilder: (context, index) {
-              Post? target;
+                      )
+                    ],
+                  ),
+                )),
+            shadowColor: Colors.transparent,
+          ),
+        ];
+      },
+      body: //
+          (allPosts.value != null)
+              ? ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: allPosts.value!.length + 4,
+                  itemBuilder: (context, index) {
+                    Post? target;
 
               try {
                 target = allPosts.value![index];
@@ -137,8 +144,9 @@ class PostsPage extends HookConsumerWidget {
                 },
               );
             },
-          )
-      ],
-    ));
+          ) : const Center(child: CircularProgressIndicator(),)
+
+    )
+    );
   }
 }
