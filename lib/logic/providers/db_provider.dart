@@ -47,7 +47,7 @@ class DbInstance extends _$DbInstance {
 
   Future fetchMorePosts({int? numberToFetch}) async {
     var url = Uri.parse(
-        "${BaseUrl.blogUrl}?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${numberToFetch ?? 10}");
+        "${BaseUrl.blogUrl}?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${20}");
     var response = await http.get(url);
 
     var atomFeed = AtomFeed.parse(response.body);

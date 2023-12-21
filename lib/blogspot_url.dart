@@ -1,3 +1,4 @@
 class BaseUrl {
-  static String blogUrl = "http://studentsblog.sst.edu.sg/feeds/posts/default";
+  static String blogUrl =
+      "http://sstannouncer.blogspot.com/feeds/posts/default";
 }
