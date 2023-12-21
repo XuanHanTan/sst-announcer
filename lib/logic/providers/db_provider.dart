@@ -47,7 +47,7 @@ class DbInstance extends _$DbInstance {
 
   Future fetchMorePosts({int? numberToFetch}) async {
     var url = Uri.parse(
-        "${BaseUrl.blogUrl}?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${20}");
+        "${BaseUrl.blogUrl}?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${numberToFetch ?? 10}");
     var response = await http.get(url);
 
     var atomFeed = AtomFeed.parse(response.body);
@@ -68,6 +68,39 @@ class DbInstance extends _$DbInstance {
                 modifiedDate: Value(e.modifiedDate),
                 customCategories: Value(e.customCategories.toString()),
               )),
+          mode: InsertMode.insertOrReplace);
+    });
+
+    state = AsyncValue.data([...(state.value ?? []), ...posts]);
+  }
+
+  Future refreshPosts() async {
+    if (state.isLoading || state.isRefreshing || state.isReloading || state.value == null) {
+      return;
+    }
+
+    var url = Uri.parse(
+        "${BaseUrl.blogUrl}?start-index=${1}&max-results=${state.value!.length}");
+    var response = await http.get(url);
+
+    var atomFeed = AtomFeed.parse(response.body);
+
+    var posts = atomFeed.items.map((e) => e.toCustomFormat());
+
+    await db.batch((batch) {
+      batch.insertAll(
+          db.posts,
+          posts.map((e) => PostsCompanion(
+            uid: Value(e.uid),
+            title: Value(e.title),
+            content: Value(e.content),
+            creators: Value(e.creators.toString()),
+            postLink: Value(e.postLink),
+            categories: Value(e.categories.toString()),
+            publishDate: Value(e.publishDate),
+            modifiedDate: Value(e.modifiedDate),
+            customCategories: Value(e.customCategories.toString()),
+          )),
           mode: InsertMode.insertOrReplace);
     });
 

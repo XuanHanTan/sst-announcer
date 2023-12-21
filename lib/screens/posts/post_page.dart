@@ -8,6 +8,10 @@ import 'package:sst_announcer/screens/posts/filter_select_bottom_sheet.dart';
 import 'package:sst_announcer/screens/posts/post_viewer.dart';
 import 'package:sst_announcer/widgets/announcement_card.dart';
 
+Future<void> _refresh(WidgetRef ref) async {
+  await ref.read(dbInstanceProvider.notifier).refreshPosts();
+}
+
 class PostsPage extends HookConsumerWidget {
   const PostsPage({super.key});
 
@@ -20,13 +24,6 @@ class PostsPage extends HookConsumerWidget {
     var categoryFilters = useState<Set<String>>({});
 
     var postRefreshTriggeredViaNoResultFromSearch = useState(false);
-
-    Future<void> _refresh() async {
-      allPosts = ref.watch(dbInstanceProvider);
-      print(allPosts);
-
-      await Future.delayed(const Duration(seconds: 1));
-    }
 
     return Scaffold(
         body: NestedScrollView(
@@ -110,7 +107,7 @@ class PostsPage extends HookConsumerWidget {
       body: //
           (allPosts.value != null && (allPosts.value?.isNotEmpty ?? false) && !postRefreshTriggeredViaNoResultFromSearch.value) // Check if the posts that we have are not null for displaying
               ? RefreshIndicator(
-            onRefresh: _refresh,
+            onRefresh: () => _refresh(ref),
                 child: ListView.builder(
                     padding: const EdgeInsets.all(8),
                     itemCount: allPosts.value!.length + 4,
