@@ -15,6 +15,7 @@ class DbInstance extends _$DbInstance {
 
   @override
   FutureOr<List<Post>> build() async {
+    fetchMorePosts();
     return db.getAllPosts();
   }
 
