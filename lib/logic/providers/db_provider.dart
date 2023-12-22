@@ -46,9 +46,9 @@ class DbInstance extends _$DbInstance {
     state = AsyncData(posts);
   }
 
-  Future fetchMorePosts({int? numberToFetch}) async {
+  Future fetchMorePosts({bool triggerStateChange = true, int? numberToFetch}) async {
     var url = Uri.parse(
-        "${BaseUrl.blogUrl}?start-index=${state.value?.length == null || state.value?.isEmpty == true ? 1 : state.value!.length + 1}&max-results=${numberToFetch ?? 10}");
+        "${BaseUrl.blogUrl}?start-index=${(await db.getAllPosts()).length}&max-results=${numberToFetch ?? 10}");
     var response = await http.get(url);
 
     var atomFeed = AtomFeed.parse(response.body);
@@ -72,7 +72,7 @@ class DbInstance extends _$DbInstance {
           mode: InsertMode.insertOrReplace);
     });
 
-    state = AsyncValue.data([...(state.value ?? []), ...posts]);
+    if (triggerStateChange) state = AsyncValue.data([...(state.value ?? []), ...posts]);
   }
 
   Future refreshPosts() async {
@@ -104,7 +104,5 @@ class DbInstance extends _$DbInstance {
           )),
           mode: InsertMode.insertOrReplace);
     });
-
-    state = AsyncValue.data([...(state.value ?? []), ...posts]);
   }
 }
