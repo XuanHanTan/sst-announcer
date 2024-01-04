@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:dart_rss/dart_rss.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:sst_announcer/blogspot_url.dart';
@@ -10,6 +14,12 @@ import 'package:sst_announcer/screens/app_host.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'logic/database/post_storage/database.dart';
+
+const initializationSettingsAndroid =
+    AndroidInitializationSettings('notif_icon');
+const initializationSettingsDarwin = DarwinInitializationSettings();
+const initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid, iOS: initializationSettingsDarwin);
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
@@ -22,6 +32,8 @@ void callbackDispatcher() {
     var atomFeed = AtomFeed.parse(response.body);
 
     var posts = atomFeed.items.map((e) => e.toCustomFormat());
+
+    final latestPostInDb = await db.getLatestPost();
 
     try {
       await db.batch((batch) {
@@ -44,12 +56,49 @@ void callbackDispatcher() {
       print("$e \n\n $stacktrace");
     }
 
+    if (latestPostInDb != null) {
+      final notifPosts = posts.toList().reversed.takeWhile((e) =>
+          e.publishDate.millisecondsSinceEpoch >
+          latestPostInDb.publishDate.millisecondsSinceEpoch);
+
+      final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+      );
+
+      for (final eachNotifPost in notifPosts) {
+        final androidNotificationDetails = AndroidNotificationDetails(
+          'new-posts',
+          'New posts',
+          channelDescription:
+              'Notifications when new posts are uploaded on the Students\' Blog',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          ticker: 'New post',
+          styleInformation: BigTextStyleInformation(eachNotifPost.content,
+              htmlFormatBigText: true),
+        );
+        final notificationDetails =
+            NotificationDetails(android: androidNotificationDetails);
+        await flutterLocalNotificationsPlugin.show(
+          eachNotifPost.publishDate.millisecondsSinceEpoch,
+          "New post from ${eachNotifPost.creators.first.name}${eachNotifPost.creators.length > 1 ? " and others" : ""}",
+          eachNotifPost.title,
+          notificationDetails,
+          payload: eachNotifPost.uid,
+        );
+      }
+
+      await FlutterAppBadger.updateBadgeCount(notifPosts.length);
+    }
+
     await db.close();
     return true;
   });
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   Workmanager().initialize(
@@ -65,7 +114,33 @@ void main() {
     frequency: const Duration(hours: 1),
   );
 
+  // initialise the plugin. notif_icon needs to be a added as a drawable resource to the Android head project
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  if (Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()!
+        .requestNotificationsPermission();
+  }
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+  );
+
   runApp(const ProviderScope(child: MyApp()));
+}
+
+// TODO: Navigate to correct post when notification is clicked
+void onDidReceiveNotificationResponse(
+    NotificationResponse notificationResponse) async {
+  final String? payload = notificationResponse.payload;
+  if (notificationResponse.payload != null) {
+    debugPrint('notification payload: $payload');
+  }
+  /*await Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (context) => SecondScreen(payload)),
+    );*/
 }
 
 class MyApp extends StatelessWidget {

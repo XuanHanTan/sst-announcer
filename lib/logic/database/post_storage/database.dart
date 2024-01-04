@@ -26,6 +26,16 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
+  Future<Post?> getLatestPost() async {
+    return await (select(posts)
+          ..orderBy([
+            (tbl) => OrderingTerm(
+                expression: tbl.publishDate.unixepoch, mode: OrderingMode.desc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
   @override
   int get schemaVersion => 1;
 }
