@@ -46,9 +46,10 @@ class DbInstance extends _$DbInstance {
     state = AsyncData(posts);
   }
 
-  Future fetchMorePosts({bool triggerStateChange = true, int? numberToFetch}) async {
+  Future fetchMorePosts(
+      {bool triggerStateChange = true, int? numberToFetch}) async {
     var url = Uri.parse(
-        "${BaseUrl.blogUrl}?start-index=${(await db.getAllPosts()).length}&max-results=${numberToFetch ?? 10}");
+        "${BaseUrl.blogUrl}?start-index=${(await db.getAllPosts()).length + 1}&max-results=${numberToFetch ?? 10}");
     var response = await http.get(url);
 
     var atomFeed = AtomFeed.parse(response.body);
@@ -72,11 +73,16 @@ class DbInstance extends _$DbInstance {
           mode: InsertMode.insertOrReplace);
     });
 
-    if (triggerStateChange) state = AsyncValue.data([...(state.value ?? []), ...posts]);
+    if (triggerStateChange) {
+      state = AsyncValue.data([...(state.value ?? []), ...posts]);
+    }
   }
 
   Future refreshPosts() async {
-    if (state.isLoading || state.isRefreshing || state.isReloading || state.value == null) {
+    if (state.isLoading ||
+        state.isRefreshing ||
+        state.isReloading ||
+        state.value == null) {
       return;
     }
 
@@ -92,16 +98,16 @@ class DbInstance extends _$DbInstance {
       batch.insertAll(
           db.posts,
           posts.map((e) => PostsCompanion(
-            uid: Value(e.uid),
-            title: Value(e.title),
-            content: Value(e.content),
-            creators: Value(e.creators.toString()),
-            postLink: Value(e.postLink),
-            categories: Value(e.categories.toString()),
-            publishDate: Value(e.publishDate),
-            modifiedDate: Value(e.modifiedDate),
-            customCategories: Value(e.customCategories.toString()),
-          )),
+                uid: Value(e.uid),
+                title: Value(e.title),
+                content: Value(e.content),
+                creators: Value(e.creators.toString()),
+                postLink: Value(e.postLink),
+                categories: Value(e.categories.toString()),
+                publishDate: Value(e.publishDate),
+                modifiedDate: Value(e.modifiedDate),
+                customCategories: Value(e.customCategories.toString()),
+              )),
           mode: InsertMode.insertOrReplace);
     });
   }
