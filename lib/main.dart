@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dart_rss/dart_rss.dart';
 import 'package:drift/drift.dart';
@@ -61,9 +62,12 @@ void callbackDispatcher() {
     }
 
     if (latestPostInDb != null) {
-      final notifPosts = posts.toList().reversed.takeWhile((e) =>
+      print("Latest post in db: ${latestPostInDb.title}");
+
+      final notifPosts = posts.where((e) =>
           e.publishDate.millisecondsSinceEpoch >
           latestPostInDb.publishDate.millisecondsSinceEpoch);
+      print(notifPosts);
 
       final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       await flutterLocalNotificationsPlugin.initialize(
@@ -86,12 +90,14 @@ void callbackDispatcher() {
         final notificationDetails =
             NotificationDetails(android: androidNotificationDetails);
         await flutterLocalNotificationsPlugin.show(
-          eachNotifPost.publishDate.millisecondsSinceEpoch,
+          Random().nextInt(100000),
           "New post from ${eachNotifPost.creators.first.name}${eachNotifPost.creators.length > 1 ? " and others" : ""}",
           eachNotifPost.title,
           notificationDetails,
           payload: eachNotifPost.uid,
         );
+
+        print("Showing notif");
       }
 
       await FlutterAppBadger.updateBadgeCount(notifPosts.length);
@@ -108,7 +114,7 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  Workmanager().initialize(
+  await Workmanager().initialize(
     callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: kDebugMode,
   );
