@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:sst_announcer/main.dart';
 import 'package:sst_announcer/screens/posts/post_page.dart';
 import 'package:sst_announcer/screens/settings/settings_page.dart';
 
@@ -10,6 +11,10 @@ class AppHost extends HookWidget {
   @override
   Widget build(BuildContext context) {
     var chosenIndex = useState(0);
+
+    useEffect(() {
+      hostPageContext = context;
+    }, []);
 
     return Scaffold(
       body: switch (chosenIndex.value) {

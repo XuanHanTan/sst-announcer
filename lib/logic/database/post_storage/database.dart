@@ -36,6 +36,11 @@ class AppDatabase extends _$AppDatabase {
         .getSingleOrNull();
   }
 
+  Future<Post?> getPost(String uid) async {
+    return await (select(posts)..where((tbl) => tbl.uid.equals(uid)))
+        .getSingleOrNull();
+  }
+
   @override
   int get schemaVersion => 1;
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_rss/dart_rss.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:sst_announcer/blogspot_url.dart';
 import 'package:sst_announcer/logic/extensions/atom_item_extensions.dart';
 import 'package:sst_announcer/screens/app_host.dart';
+import 'package:sst_announcer/screens/posts/post_viewer.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'logic/database/post_storage/database.dart';
@@ -20,6 +22,8 @@ const initializationSettingsAndroid =
 const initializationSettingsDarwin = DarwinInitializationSettings();
 const initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid, iOS: initializationSettingsDarwin);
+
+BuildContext? hostPageContext;
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
@@ -94,11 +98,14 @@ void callbackDispatcher() {
     }
 
     await db.close();
+
     return true;
   });
 }
 
 void main() async {
+  Widget initialPage = const MyApp();
+
   WidgetsFlutterBinding.ensureInitialized();
 
   Workmanager().initialize(
@@ -106,13 +113,15 @@ void main() async {
     isInDebugMode: kDebugMode,
   );
 
-  Workmanager().registerPeriodicTask(
-    "fetch-posts",
-    "fetchPosts",
-    // When no frequency is provided the default 15 minutes is set.
-    // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
-    frequency: const Duration(hours: 1),
-  );
+  if (Platform.isAndroid) {
+    Workmanager().registerPeriodicTask(
+      "fetch-posts",
+      "fetchPosts",
+      // When no frequency is provided the default 15 minutes is set.
+      // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
+      frequency: const Duration(hours: 1),
+    );
+  }
 
   // initialise the plugin. notif_icon needs to be a added as a drawable resource to the Android head project
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -127,20 +136,47 @@ void main() async {
     onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
   );
 
-  runApp(const ProviderScope(child: MyApp()));
+  // Open correct post viewer page if opened from notification
+  final notifAppLaunchDetails =
+      await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+  if (notifAppLaunchDetails != null &&
+      notifAppLaunchDetails.didNotificationLaunchApp) {
+    final payload = notifAppLaunchDetails.notificationResponse!.payload;
+
+    if (payload != null) {
+      final db = AppDatabase();
+      final post = await db.getPost(payload);
+
+      if (post != null) {
+        initialPage = PostViewerPage(post: post);
+      }
+    }
+  }
+
+  runApp(ProviderScope(child: initialPage));
 }
 
-// TODO: Navigate to correct post when notification is clicked
+@pragma('vm:entry-point')
 void onDidReceiveNotificationResponse(
     NotificationResponse notificationResponse) async {
   final String? payload = notificationResponse.payload;
   if (notificationResponse.payload != null) {
     debugPrint('notification payload: $payload');
+
+    final db = AppDatabase();
+    final post = await db.getPost(payload!);
+
+    if (post != null) {
+      Navigator.push(
+        hostPageContext!,
+        CupertinoPageRoute(
+          builder: (context) => PostViewerPage(post: post),
+        ),
+      );
+    }
+
+    await FlutterAppBadger.removeBadge(); // TODO: set post as read in db
   }
-  /*await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (context) => SecondScreen(payload)),
-    );*/
 }
 
 class MyApp extends StatelessWidget {
